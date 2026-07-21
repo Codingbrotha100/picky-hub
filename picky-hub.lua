@@ -3,19 +3,18 @@ local Rayfield = loadstring(game:HttpGet('https://sirius.menu/rayfield'))()
 
 local Window = Rayfield:CreateWindow({
     Name = "Picky Hub - Power Your City",
-    LoadingTitle = "Picky Hub",
-    LoadingSubtitle = "Auto Collect + Detector",
+    LoadingTitle = "Loading Picky Hub",
+    LoadingSubtitle = "Auto Collect + Rare Detector",
     ConfigurationSaving = {
         Enabled = true,
-        FolderName = "PickyHub_Config",
-        FileName = "PowerYourCity"
+        FolderName = "PickyHub",
+        FileName = "Config"
     }
 })
 
 local Tab = Window:CreateTab("Main", 4483362458)
 
 local autoCollect = true
-local selectedRarities = {Epic = true, Legendary = true, Mythic = true}
 
 local function getRoot()
     local char = game.Players.LocalPlayer.Character
@@ -23,7 +22,7 @@ local function getRoot()
     return char:FindFirstChild("HumanoidRootPart") or char:FindFirstChildWhichIsA("BasePart")
 end
 
-local function autoCollectFunc()
+local function startAutoCollect()
     while autoCollect do
         local root = getRoot()
         if root then
@@ -48,50 +47,45 @@ end
 Tab:CreateToggle({
     Name = "Auto Collect",
     CurrentValue = true,
-    Flag = "AutoCollectFlag",
     Callback = function(Value)
         autoCollect = Value
-        if Value then task.spawn(autoCollectFunc) end
+        if Value then task.spawn(startAutoCollect) end
     end,
 })
 
-Tab:CreateSection("Rare Notifications")
+Tab:CreateSection("Rare Item Detector")
 
-Tab:CreateToggle({
-    Name = "Notify Epic",
-    CurrentValue = true,
-    Flag = "EpicFlag",
-    Callback = function(v) selectedRarities.Epic = v end,
-})
-
-Tab:CreateToggle({
-    Name = "Notify Legendary",
-    CurrentValue = true,
-    Flag = "LegendaryFlag",
-    Callback = function(v) selectedRarities.Legendary = v end,
-})
-
-Tab:CreateToggle({
-    Name = "Notify Mythic",
-    CurrentValue = true,
-    Flag = "MythicFlag",
-    Callback = function(v) selectedRarities.Mythic = v end,
-})
+Tab:CreateToggle({Name = "Notify Epic", CurrentValue = true, Callback = function() end})
+Tab:CreateToggle({Name = "Notify Legendary", CurrentValue = true, Callback = function() end})
+Tab:CreateToggle({Name = "Notify Mythic", CurrentValue = true, Callback = function() end})
 
 Tab:CreateButton({
-    Name = "Stop All",
+    Name = "STOP ALL",
     Callback = function()
         autoCollect = false
-        Rayfield:Notify({Title = "Stopped", Content = "All features disabled", Duration = 5})
+        Rayfield:Notify({Title = "Picky Hub", Content = "All features stopped", Duration = 5})
     end,
 })
 
 -- Detector
 task.spawn(function()
     while true do
-        for _, gui in ipairs(game.Players.LocalPlayer.PlayerGui:GetDescendants()) do
-            if (gui:IsA("TextLabel") or gui:IsA("TextButton")) then
-                local txt = gui.Text:lower()
-                local rarity = nil
-                if txt:find("epic") and selectedRarities.Epic then rarity = "Epic"
-                elseif txt:find("
+        for _, v in ipairs(game.Players.LocalPlayer.PlayerGui:GetDescendants()) do
+            if v:IsA("TextLabel") or v:IsA("TextButton") then
+                local t = v.Text:lower()
+                if t:find("epic") or t:find("legendary") or t:find("mythic") then
+                    Rayfield:Notify({
+                        Title = "🎉 Rare Item Found!",
+                        Content = v.Text,
+                        Duration = 8
+                    })
+                    task.wait(10)
+                end
+            end
+        end
+        task.wait(3)
+    end
+end)
+
+Rayfield:LoadConfiguration()
+print("✅ Picky Hub loaded successfully!")
